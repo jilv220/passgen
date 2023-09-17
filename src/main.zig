@@ -29,7 +29,7 @@ pub fn main() !void {
         \\-h, --help             Display this help and exit.
         \\-l, --line             Print the generated passwords one per line. 
         \\-n, --number <usize>   An option parameter, which takes a value.
-        \\<usize>...             [password length] [number of passwords]
+        \\<string>...             [password length] [number of passwords]
     );
 
     var diag = clap.Diagnostic{};
@@ -56,9 +56,25 @@ pub fn main() !void {
         );
     if (res.args.number) |n|
         debug.print("--number = {}\n", .{n});
-    for (res.positionals) |_| {
-        passwordLen = res.positionals[0];
-        numOfPasswords = res.positionals[1];
+
+    // interpret as numOfPassword
+    if (res.positionals.len == 1) {
+        numOfPasswords = std.fmt.parseUnsigned(
+            usize,
+            res.positionals[0],
+            10,
+        ) catch DEFAULT_NUM;
+    } else if (res.positionals.len >= 2) {
+        passwordLen = std.fmt.parseUnsigned(
+            usize,
+            res.positionals[0],
+            10,
+        ) catch DEFAULT_LENGTH;
+        numOfPasswords = std.fmt.parseUnsigned(
+            usize,
+            res.positionals[1],
+            10,
+        ) catch DEFAULT_NUM;
     }
 
     // ascii 33 to 126
